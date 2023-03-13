@@ -1,0 +1,7 @@
+proc mixed data=model  ;
+class period sequence pid treatment;
+model VAR= period  sequence treatment/DDFM=SAT
+;
+repeated / subject=pid type=cs R;  
+lsmeans treatment / PDIFF CL E;
+run;
