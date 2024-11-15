@@ -1,0 +1,49 @@
+
+#### Fecal WGCNA
+
+
+### Limma - fecal metabolomics
+
+
+### Limma - fasting serum metabolomics
+
+
+### Limma - urine metabolomics
+
+
+### RandomForest 
+
+# Load packages
+library(caTools)
+library(randomForest)
+library(summarytools)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+
+newdata <- read.csv("filename.csv")
+
+#Create diet variable that is numeric 
+newdata$Diet <- ifelse(newdata$Treatment == "WD", 0, 
+                          ifelse(newdata$Treatment == "MD", 1, NA))
+
+# Ensure the response variable 'Diet' is a factor
+newdata$Diet <- as.factor(newdata$Diet)
+
+print(newdata[, c("Diet", "Treatment")])
+
+#remove extraneous columns
+df_excluded <- select(newdata, -timeid, -sequence, -PID, -Period, -Treatment, -pid_treat)
+
+print(df_excluded[, c("Diet")])
+
+# Train a Random Forest model
+set.seed(222)  # Setting seed
+classifier_RF = randomForest(Diet ~ ., data=df_excluded, importance=TRUE, ntree = 1000)
+
+# OOB error rate
+oob_error_rate <- classifier_RF$err.rate[nrow(classifier_RF$err.rate), "OOB"]
+
+# Classification accuracy from OOB error rate
+oob_accuracy <- 1 - oob_error_rate
+print(paste("OOB Classification Accuracy:", round(oob_accuracy * 100, 2), "%"))
